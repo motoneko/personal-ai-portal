@@ -154,3 +154,7 @@ MIT License。界面与服务端为独立实现，通过公开兼容 API 与 Sub
 代理需将 `/draw` 和 `/draw/` 前缀转发到 Portal；`/v1` 和 Sub2API 路由保持原配置。`/draw/editor` 需要登录且只允许本站嵌入。
 
 Obsidian 官方同步的只读接入设计见 [方案](docs/OBSIDIAN.md)，尚未启用。
+
+## 登录防爆破与邮件告警
+
+支持 Fail2Ban 按登录失败日志封禁、可信代理真实 IP 识别、持久封禁、SMTP 告警队列及全局邮件冷却。该功能需在主机安装 Fail2Ban 并配置 SMTP，单独启动 Compose 不会自动安装或启用邮件通道。详见 [部署与维护说明](docs/SECURITY-LOGIN.md)。

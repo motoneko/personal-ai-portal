@@ -1,0 +1,25 @@
+[portal-login]
+enabled = true
+backend = polling
+filter = portal-login
+logpath = /var/lib/docker/volumes/personal-ai-portal_portal-data/_data/security/auth.log
+logtimezone = UTC
+usedns = no
+findtime = 600
+maxretry = 6
+bantime = 3600
+ignoreip =
+action = portal-ban
+
+[portal-burst]
+enabled = true
+backend = polling
+filter = portal-burst
+logpath = /var/lib/docker/volumes/personal-ai-portal_portal-data/_data/security/auth.log
+logtimezone = UTC
+usedns = no
+findtime = 600
+maxretry = 1
+bantime = 1800
+ignoreip =
+action = portal-alert

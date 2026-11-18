@@ -18,6 +18,7 @@ import (
 	"mime"
 	_ "modernc.org/sqlite"
 	"net/http"
+	"net/netip"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -31,6 +32,8 @@ import (
 var files embed.FS
 
 type app struct {
+	securityLog                                     *log.Logger
+	trustedProxies                                  []netip.Prefix
 	db                                              *sql.DB
 	origin, upstream, quota, key, model, imageModel string
 	password                                        []byte
@@ -73,10 +76,13 @@ func openDB(path string) (*sql.DB, error) {
 		return nil, e
 	}
 	db.SetMaxOpenConns(1)
-	_, e = db.Exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, expires INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS records (id TEXT PRIMARY KEY, kind TEXT NOT NULL, title TEXT NOT NULL, body TEXT NOT NULL, updated INTEGER NOT NULL);`)
+	_, e = db.Exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS login_bans (ip TEXT PRIMARY KEY, expires INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, expires INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS records (id TEXT PRIMARY KEY, kind TEXT NOT NULL, title TEXT NOT NULL, body TEXT NOT NULL, updated INTEGER NOT NULL);`)
 	return db, e
 }
 func main() {
+	if securityCommand() {
+		return
+	}
 	if len(os.Args) > 1 && os.Args[1] == "healthcheck" {
 		c := http.Client{Timeout: 3 * time.Second}
 		r, e := c.Get("http://127.0.0.1:8090/portal-api/health")
@@ -101,6 +107,9 @@ func main() {
 	defer db.Close()
 	salt := token()
 	a := &app{db: db, origin: env("PORTAL_ORIGIN", "http://localhost:8090"), upstream: strings.TrimRight(env("UPSTREAM_URL", "http://localhost:8080"), "/"), quota: strings.TrimRight(env("QUOTA_URL", "http://localhost:18081"), "/"), key: os.Getenv("PORTAL_API_KEY"), model: env("PORTAL_MODEL", "gpt-6.1-sol"), imageModel: env("PORTAL_IMAGE_MODEL", "gpt-image-1"), salt: salt, password: passwordHash(password, salt), secure: env("PORTAL_SECURE_COOKIE", "true") != "false", client: &http.Client{Timeout: 180 * time.Second}, slots: make(chan struct{}, 2), attempts: map[string]attempt{}}
+	if err := a.configureSecurity(); err != nil {
+		log.Fatal(err)
+	}
 	srv := &http.Server{Addr: env("PORTAL_LISTEN", ":8090"), Handler: a, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 200 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 16384}
 	log.Printf("portal listening on %s", srv.Addr)
 	log.Fatal(srv.ListenAndServe())
@@ -262,6 +271,20 @@ func (a *app) static(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func (a *app) login(w http.ResponseWriter, r *http.Request) {
+	ip := a.clientIP(r)
+	var expires int64
+	err := a.db.QueryRow("SELECT expires FROM login_bans WHERE ip=?", ip).Scan(&expires)
+	if err != nil && err != sql.ErrNoRows {
+		fail(w, 503, "登录暂时不可用")
+		return
+	}
+	if expires > time.Now().Unix() {
+		w.Header().Set("Retry-After", strconv.FormatInt(expires-time.Now().Unix(), 10))
+		fail(w, 429, "登录尝试异常，此来源暂时受限，请稍后重试")
+		return
+	}
+	r.Body = http.MaxBytesReader(w, r.Body, 4096)
+
 	// Global bounded limiter: proxy topology cannot be used to evade login throttling.
 	a.mu.Lock()
 	t := a.attempts["login"]
@@ -272,6 +295,10 @@ func (a *app) login(w http.ResponseWriter, r *http.Request) {
 	a.attempts["login"] = t
 	a.mu.Unlock()
 	if t.count > 10 {
+		if t.count == 11 {
+			a.securityEvent("global_throttle", ip)
+		}
+		w.Header().Set("Retry-After", "60")
 		fail(w, 429, "尝试过多，请一分钟后重试")
 		return
 	}
@@ -279,9 +306,11 @@ func (a *app) login(w http.ResponseWriter, r *http.Request) {
 		Password string `json:"password"`
 	}
 	if !decode(w, r, &in) {
+		a.securityEvent("login_failed", ip)
 		return
 	}
 	if len(in.Password) > 1024 || subtle.ConstantTimeCompare(passwordHash(in.Password, a.salt), a.password) != 1 {
+		a.securityEvent("login_failed", ip)
 		fail(w, 401, "密码不正确")
 		return
 	}

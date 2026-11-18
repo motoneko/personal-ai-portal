@@ -19,6 +19,7 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: go test ./...
+      - run: python3 -m unittest discover -s deploy/security -p "test_*.py"
       - run: go build -o /tmp/portal .
       - run: npx playwright install --with-deps chromium
       - name: Browser integration tests

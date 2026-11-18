@@ -1,0 +1,19 @@
+[Unit]
+Description=Send aggregated private portal security alerts
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/personal-ai-portal/alerts.env
+ExecStart=/usr/bin/python3 /opt/personal-ai-portal-security/notify.py send
+StateDirectory=personal-ai-portal-alerts
+StateDirectoryMode=0700
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/personal-ai-portal-alerts
+MemoryMax=64M
+CPUQuota=25%
+TimeoutStartSec=50
