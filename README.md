@@ -142,3 +142,15 @@ docker compose up -d --build
 ## 开源
 
 MIT License。界面与服务端为独立实现，通过公开兼容 API 与 Sub2API 集成。运行配置、密钥、账号数据、证书和生产备份均不属于仓库内容。
+
+## Drawnix 白板
+
+`/draw/` 集成开源 [Drawnix](https://github.com/plait-board/drawnix)，在浏览器中运行，和 Portal 共用容器。编辑器单独打包、按页面加载，不增加首页的脚本体积。支持思维导图、流程图、自由绘画，以及上游的导入导出功能。
+
+登录后读取私人白板；点击“保存到小岛”将当前白板保存在服务器 SQLite 中，换设备登录后可以继续。当前提供一张持久白板，保存是手动触发的；请避免多设备同时覆盖编辑。离开前有未保存修改会触发浏览器提醒。单张白板保存上限 1.5 MB（包含内嵌图片）；大型白板可通过 Drawnix 菜单导出 `.drawnix` 备份。
+
+已有部署可运行 `sudo python3 deploy/enable-drawnix.py /etc/haproxy/haproxy.cfg` 更新路由（自动备份、检查并重载）。
+
+代理需将 `/draw` 和 `/draw/` 前缀转发到 Portal；`/v1` 和 Sub2API 路由保持原配置。`/draw/editor` 需要登录且只允许本站嵌入。
+
+Obsidian 官方同步的只读接入设计见 [方案](docs/OBSIDIAN.md)，尚未启用。

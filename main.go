@@ -27,7 +27,7 @@ import (
 	"time"
 )
 
-//go:embed web/index.html web/style.css web/dist/*
+//go:embed web/index.html web/drawing.html web/style.css web/dist/*
 var files embed.FS
 
 type app struct {
@@ -136,7 +136,7 @@ func (a *app) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Referrer-Policy", "same-origin")
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("X-Frame-Options", "DENY")
-	w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https:; connect-src 'self'; frame-src blob:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'")
+	w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https:; connect-src 'self'; frame-src 'self' blob:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'")
 	p := r.URL.Path
 	if !strings.HasPrefix(p, "/portal-api/") {
 		a.static(w, r)
@@ -204,7 +204,15 @@ func (a *app) static(w http.ResponseWriter, r *http.Request) {
 	file := ""
 	typ := "text/html; charset=utf-8"
 	switch p {
-	case "/", "/chat/", "/tools/", "/read/", "/lab/", "/status/", "/quota/", "/portal-login/":
+	case "/draw/editor":
+		if !a.authenticated(r) {
+			http.Redirect(w, r, "/portal-login/", 303)
+			return
+		}
+		w.Header().Set("X-Frame-Options", "SAMEORIGIN")
+		w.Header().Set("Content-Security-Policy", strings.ReplaceAll(w.Header().Get("Content-Security-Policy"), "frame-ancestors 'none'", "frame-ancestors 'self'"))
+		file = "web/drawing.html"
+	case "/", "/draw/", "/chat/", "/tools/", "/read/", "/lab/", "/status/", "/quota/", "/portal-login/":
 		file = "web/index.html"
 	case "/portal-assets/style.css":
 		file = "web/style.css"
@@ -234,7 +242,7 @@ func (a *app) static(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
-		for _, v := range []string{"chat", "tools", "read", "lab", "status", "quota", "portal-login"} {
+		for _, v := range []string{"draw", "chat", "tools", "read", "lab", "status", "quota", "portal-login"} {
 			if p == "/"+v {
 				http.Redirect(w, r, p+"/", 308)
 				return
@@ -515,7 +523,11 @@ func (a *app) records(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		kind := r.URL.Query().Get("kind")
-		rows, e := a.db.Query("SELECT id,kind,title,body,updated FROM records WHERE kind=? ORDER BY updated DESC LIMIT 100", kind)
+		query := "SELECT id,kind,title,body,updated FROM records WHERE kind=? ORDER BY updated DESC LIMIT 100"
+		if r.URL.Query().Get("summary") == "1" {
+			query = "SELECT id,kind,title,'',updated FROM records WHERE kind=? ORDER BY updated DESC LIMIT 4"
+		}
+		rows, e := a.db.Query(query, kind)
 		if e != nil {
 			fail(w, 500, "读取失败")
 			return
@@ -536,7 +548,7 @@ func (a *app) records(w http.ResponseWriter, r *http.Request) {
 		if !decode(w, r, &v) {
 			return
 		}
-		if v.Kind != "chat" && v.Kind != "read" && v.Kind != "lab" && v.Kind != "prompt" {
+		if v.Kind != "chat" && v.Kind != "read" && v.Kind != "lab" && v.Kind != "prompt" && v.Kind != "drawing" {
 			fail(w, 400, "记录类型无效")
 			return
 		}

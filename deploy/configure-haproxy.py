@@ -16,8 +16,8 @@ if 'backend personal_ai_portal' in source:
     raise SystemExit('Portal backend already exists; review existing config before changing it.')
 backup = path.with_name(path.name + '.bak-portal-' + datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ'))
 needle = '    use_backend sub2api_app if sub2api_host'
-routes = '''    acl portal_path path / /chat /tools /read /lab /status /quota /portal-login
-    acl portal_path path_beg /chat/ /tools/ /read/ /lab/ /status/ /quota/ /portal-login/ /portal-assets/ /portal-api/
+routes = '''    acl portal_path path / /draw /chat /tools /read /lab /status /quota /portal-login
+    acl portal_path path_beg /draw/ /chat/ /tools/ /read/ /lab/ /status/ /quota/ /portal-login/ /portal-assets/ /portal-api/
     http-request redirect scheme https code 308 if sub2api_host portal_path !{ ssl_fc } !{ hdr(X-Forwarded-Proto) -i https }
     use_backend personal_ai_portal if sub2api_host portal_path
 '''

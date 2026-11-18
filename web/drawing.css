@@ -1,0 +1,58 @@
+html,
+body,
+#drawing-app {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+.drawing-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--animal-bg-color);
+}
+.drawing-savebar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  color: var(--animal-text-color);
+  font-family: var(--animal-font-family);
+}
+.drawing-savebar strong {
+  font-size: 18px;
+  margin-right: 20px;
+}
+.drawing-savebar span {
+  font-size: 14px;
+}
+.drawing-canvas {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+.drawing-canvas .drawnix {
+  height: 100%;
+}
+@media (max-width: 600px) {
+  .drawing-savebar {
+    padding: 8px;
+  }
+  .drawing-savebar strong {
+    display: block;
+    font-size: 16px;
+  }
+  .drawing-savebar span {
+    display: block;
+    font-size: 14px;
+    max-width: 210px;
+  }
+}
+/* Keep controls reachable on narrow screens, including resized desktop windows. */
+@media (max-width:700px) {
+ .drawing-canvas .drawnix .draw-toolbar { top:12px; left:8px; right:8px; transform:none; max-width:calc(100% - 16px); overflow-x:auto; }
+ .drawing-canvas .drawnix .app-toolbar { top:auto; bottom:16px; left:12px; width:auto; transform:none; }
+ .drawing-canvas .drawnix .zoom-toolbar { top:auto; bottom:16px; right:12px; }
+ .drawing-canvas .drawnix .theme-toolbar { display:none; }
+}

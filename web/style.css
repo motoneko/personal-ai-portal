@@ -1,3 +1,4 @@
+:root { --animal-font-size-sm:14px; --animal-font-size-base:16px; --animal-font-size-lg:18px; }
 * {
   box-sizing: border-box;
 }
@@ -48,16 +49,17 @@ main {
   min-height: 100vh;
 }
 .island-shell {
-  max-width: 1250px;
+  width: 100%;
+  max-width: none;
   margin: auto;
-  padding: 0 46px;
+  padding: 0 clamp(16px, 3vw, 56px);
 }
 .island-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-  min-height: 112px;
+  min-height: 88px;
   border-bottom: 2px dashed var(--animal-border-color-light);
 }
 .brand {
@@ -78,7 +80,7 @@ main {
   font-weight: 900;
 }
 .brand small {
-  font-size: 9px;
+  font-size: 14px;
   letter-spacing: 1.7px;
   font-weight: 800;
   color: var(--animal-text-color-muted);
@@ -217,7 +219,7 @@ main {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 1px;
 }
 .island-strip {
@@ -242,7 +244,7 @@ main {
 .strip-greeting small,
 .strip-label {
   display: block;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--animal-text-color-muted);
   margin: 5px 0;
 }
@@ -250,14 +252,14 @@ main {
   font-size: 17px;
 }
 .island-strip strong small {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
 }
 .strip-date {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
 }
 .section-heading {
@@ -267,7 +269,7 @@ main {
   margin-bottom: 24px;
 }
 .eyebrow {
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 2px;
   color: var(--animal-text-color-muted);
   font-weight: 800;
@@ -278,7 +280,7 @@ main {
   margin: 9px 0 0;
 }
 .section-heading > span {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--animal-text-color-muted);
 }
 .cards {
@@ -304,7 +306,7 @@ main {
   gap: 8px;
 }
 .destination-top > span:last-child {
-  font-size: 10px;
+  font-size: 14px;
 }
 .destination-icon {
   display: inline-flex;
@@ -323,7 +325,7 @@ main {
   margin: 22px 0 10px;
 }
 .destination p {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.9;
   color: var(--animal-text-color);
   margin-bottom: 20px;
@@ -334,7 +336,7 @@ main {
   align-items: center;
   justify-content: space-between;
   margin-top: auto;
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 700;
 }
 .home-bottom {
@@ -354,7 +356,7 @@ main {
   font-weight: 800;
 }
 .notice-board p {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--animal-text-color-muted);
   position: relative;
   z-index: 1;
@@ -378,11 +380,11 @@ main {
 }
 .quick-row a > span {
   flex: 1;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
 }
 .quick-row small {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--animal-text-color-muted);
   display: block;
   margin-top: 5px;
@@ -393,7 +395,7 @@ main {
   align-items: center;
   justify-content: center;
   gap: 30px;
-  font-size: 11px;
+  font-size: 14px;
   margin-top: 20px;
   color: var(--animal-text-color-muted);
 }
@@ -427,7 +429,7 @@ main {
 }
 .page-heading p {
   color: var(--animal-text-color-muted);
-  font-size: 13px;
+  font-size: 14px;
   margin: 0;
 }
 .workspace {
@@ -492,7 +494,7 @@ main {
 }
 label {
   display: block;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 800;
   margin: 10px 0;
 }
@@ -513,7 +515,7 @@ label {
   margin: 20px 0;
   align-items: flex-start;
   line-height: 1.9;
-  font-size: 13px;
+  font-size: 14px;
 }
 .bubble > div {
   padding: 14px 18px;
@@ -526,7 +528,7 @@ label {
 }
 .bubble small {
   display: block;
-  font-size: 10px;
+  font-size: 14px;
   color: var(--animal-text-color-muted);
   margin-bottom: 5px;
 }
@@ -547,7 +549,7 @@ textarea {
   color: var(--animal-text-color);
   padding: 18px;
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.9;
   margin-bottom: 15px;
 }
@@ -559,7 +561,7 @@ textarea:disabled {
 }
 .muted {
   color: var(--animal-text-color-muted);
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.9;
 }
 .empty {
@@ -574,7 +576,7 @@ textarea:disabled {
   min-height: 220px;
 }
 .empty p {
-  font-size: 13px;
+  font-size: 14px;
   line-height: 2;
   margin-bottom: 0;
 }
@@ -585,7 +587,7 @@ textarea:disabled {
   padding: 16px 20px;
   background: var(--animal-primary-color-bg);
   border-radius: var(--animal-border-radius-lg);
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.8;
   margin-bottom: 20px;
 }
@@ -602,7 +604,7 @@ textarea:disabled {
   align-items: center;
   gap: 13px;
   padding: 16px 23px !important;
-  font-size: 13px;
+  font-size: 14px;
 }
 .tool-grid,
 .quota-grid {
@@ -627,7 +629,7 @@ textarea:disabled {
 .output {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.9;
   padding: 20px;
   background: var(--animal-bg-color);
@@ -689,7 +691,7 @@ textarea:disabled {
   padding: 35px 25px !important;
 }
 .login-art p {
-  font-size: 13px;
+  font-size: 14px;
   line-height: 2;
 }
 .login-card {
@@ -701,7 +703,7 @@ textarea:disabled {
   margin: 23px 0 12px;
 }
 .login-card p {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--animal-text-color-muted);
 }
 .login-card form {
@@ -711,7 +713,7 @@ textarea:disabled {
   margin: 25px 0;
 }
 .error-text {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--animal-error-color);
 }
 .stats-grid {
@@ -729,7 +731,7 @@ textarea:disabled {
   margin: 25px 0 20px;
 }
 .stats-grid p {
-  font-size: 12px;
+  font-size: 14px;
   margin-top: 17px;
   margin-bottom: 0;
 }
@@ -747,7 +749,7 @@ textarea:disabled {
   font-size: 27px;
 }
 .service-card small {
-  font-size: 11px;
+  font-size: 14px;
 }
 .status-item {
   display: flex;
@@ -756,7 +758,7 @@ textarea:disabled {
   gap: 15px;
   padding: 23px 0;
   border-bottom: 2px dashed var(--animal-border-color-light);
-  font-size: 13px;
+  font-size: 14px;
 }
 .status-item > span {
   display: flex;
@@ -778,7 +780,7 @@ textarea:disabled {
   margin: 25px 0;
 }
 .quota-line .row {
-  font-size: 13px;
+  font-size: 14px;
   margin-bottom: 14px;
 }
 .quota-line small {
@@ -823,7 +825,7 @@ textarea:disabled {
     align-items: start;
   }
   .destination-top > span:last-child {
-    font-size: 9px;
+    font-size: 14px;
   }
   .strip-greeting {
     display: none;
@@ -847,7 +849,7 @@ textarea:disabled {
     font-size: 24px;
   }
   .brand small {
-    font-size: 8px;
+    font-size: 14px;
     letter-spacing: 1px;
   }
   .brand-leaf svg {
@@ -867,7 +869,7 @@ textarea:disabled {
     margin-top: 23px;
   }
   .welcome p {
-    font-size: 12px;
+    font-size: 14px;
   }
   .hero-buttons {
     justify-content: center;
@@ -904,13 +906,13 @@ textarea:disabled {
     display: none;
   }
   .strip-label {
-    font-size: 10px;
+    font-size: 14px;
   }
   .island-strip > div > strong {
     font-size: 14px;
   }
   .island-strip strong small {
-    font-size: 9px;
+    font-size: 14px;
   }
   .section-heading > span {
     display: none;
@@ -935,7 +937,7 @@ textarea:disabled {
     height: 45px;
   }
   .destination-top > span:last-child {
-    font-size: 9px;
+    font-size: 14px;
   }
   .destination h3 {
     font-size: 16px;
@@ -943,10 +945,10 @@ textarea:disabled {
     line-height: 1.5;
   }
   .destination p {
-    font-size: 11px;
+    font-size: 14px;
   }
   .destination-bottom {
-    font-size: 9px;
+    font-size: 14px;
     gap: 5px;
     align-items: end;
   }
@@ -968,7 +970,7 @@ textarea:disabled {
   .footer-links {
     gap: 12px;
     flex-wrap: wrap;
-    font-size: 10px;
+    font-size: 14px;
   }
   .module-nav {
     padding-top: 20px;
@@ -977,19 +979,19 @@ textarea:disabled {
     padding-bottom: 6px;
   }
   .module-nav button {
-    font-size: 11px;
+    font-size: 14px;
   }
   .page-heading h1 {
     font-size: 25px;
   }
   .page-heading p {
-    font-size: 11px;
+    font-size: 14px;
   }
   .page-heading {
     gap: 10px;
   }
   .page-heading > button {
-    font-size: 11px;
+    font-size: 14px;
     flex-shrink: 0;
   }
   .history {
@@ -1026,7 +1028,7 @@ textarea:disabled {
     height: 350px;
   }
   .messages .bubble {
-    font-size: 12px;
+    font-size: 14px;
   }
   .row {
     gap: 10px;
@@ -1056,7 +1058,7 @@ textarea:disabled {
   }
   .notice {
     padding: 14px;
-    font-size: 11px;
+    font-size: 14px;
   }
   .clock-corner {
     margin-top: 20px;
@@ -1069,3 +1071,218 @@ textarea:disabled {
     opacity: 0.65;
   }
 }
+
+/* Spacious work surfaces with readable text on every screen. */
+body {
+  font-size: 16px;
+}
+.home-content {
+  padding: 38px 0 20px;
+}
+.home-start {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+.home-start h1 {
+  font-size: clamp(30px, 3vw, 48px);
+  margin: 22px 0 10px;
+}
+.home-start p {
+  font-size: 18px;
+  margin: 0;
+  color: var(--animal-text-color-secondary);
+}
+.home-content .cards {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+.home-content .destination-card {
+  min-height: 230px;
+  padding: 28px;
+}
+.home-content .destination-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+.home-content .destination h3 {
+  font-size: 22px;
+}
+.home-content .destination p {
+  font-size: 16px;
+}
+.home-content h2 {
+  font-size: 23px;
+  margin: 0;
+}
+.home-recent {
+  margin-top: 36px;
+}
+.recent-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+.recent-grid a {
+  min-width: 0;
+}
+.recent-grid strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 12px;
+}
+.recent-grid span {
+  font-size: 14px;
+  color: var(--animal-text-color-secondary);
+}
+.recent-empty {
+  margin: 0;
+  padding: 10px;
+  color: var(--animal-text-color-secondary);
+}
+.home-utilities {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 30px;
+}
+.home-utilities a {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 0;
+}
+.page-heading {
+  padding: 24px 0;
+}
+.page-heading h1 {
+  margin: 10px 0;
+}
+.workspace {
+  grid-template-columns: 280px minmax(0, 1fr);
+}
+.page-chat .workspace {
+  height: max(580px, calc(100dvh - 300px));
+}
+.page-chat .history {
+  overflow: auto;
+}
+.chat-room {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.chat-room .messages {
+  flex: 1;
+  min-height: 180px;
+  height: auto;
+  overflow: auto;
+}
+.messages .bubble {
+  font-size: 18px;
+}
+textarea {
+  font-size: 16px;
+}
+.chat-room #chat-input {
+  min-height: 80px;
+  height: 80px;
+}
+.drawing-frame {
+  width: 100%;
+  height: calc(100dvh - 180px);
+  min-height: 540px;
+  display: block;
+  border: 1px solid var(--animal-border-color);
+  border-radius: 16px;
+}
+.page-draw main {
+  min-height: 0;
+}
+.page-draw .footer-links,
+.page-draw .animal-footer,
+.page-draw > .animal-divider {
+  display: none;
+}
+@media (max-width: 1100px) {
+  .home-content .cards,
+  .recent-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 700px) {
+  .island-shell {
+    padding: 0 16px;
+  }
+  .home-content {
+    padding-top: 24px;
+  }
+  .home-start {
+    align-items: flex-start;
+    flex-direction: column;
+    margin-bottom: 26px;
+  }
+  .home-content .cards,
+  .recent-grid {
+    grid-template-columns: 1fr;
+  }
+  .home-content .destination-card {
+    min-height: 0;
+    padding: 22px;
+  }
+  .home-content .destination-top {
+    margin-bottom: 12px;
+  }
+  .home-recent .section-heading {
+    align-items: flex-start;
+    gap: 10px;
+    flex-direction: column;
+  }
+  .home-utilities {
+    gap: 16px;
+  }
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+  .page-chat .workspace {
+    height: auto;
+  }
+  .page-chat .chat-room {
+    height: calc(100dvh - 130px);
+    min-height: 550px;
+  }
+  .messages .bubble {
+    font-size: 17px;
+  }
+  .drawing-frame {
+    height: calc(100dvh - 175px);
+    min-height: 480px;
+  }
+  .brand small {
+    display: none;
+  }
+}
+.home-content .destination-top {
+  flex-direction: row;
+}
+@media (max-width: 700px) {
+  .home-content .destination-card {
+    padding: 20px !important;
+  }
+  .home-content .destination-top {
+    margin-bottom: 14px;
+  }
+  .home-content .destination h3 {
+    margin-bottom: 10px;
+  }
+  .home-content .destination p {
+    margin-bottom: 14px;
+  }
+}
+@media (max-width:700px) { .module-nav { margin-right:0; padding-right:0; } }

@@ -15,12 +15,18 @@ const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));
 await page.goto(base);
 await page.locator(".cards .destination").first().waitFor();
-assert.equal(await page.locator(".cards .destination").count(), 6);
+assert.equal(await page.locator(".cards .destination").count(), 4);
 fs.mkdirSync("test-results", { recursive: true });
 await page.screenshot({
   path: "test-results/home-desktop.png",
   fullPage: true,
 });
+assert.equal(await page.locator('a[href="/draw/"]').count(), 1);
+assert.ok(
+  (await page
+    .locator(".island-shell")
+    .evaluate((el) => el.getBoundingClientRect().width)) > 1400,
+);
 await page.goto(base + "/tools/");
 await page.locator("#json-input").fill('{"test":1}');
 await page.locator("#json-format").click();

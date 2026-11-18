@@ -29,3 +29,4 @@ jobs:
             sleep 1
           done
           npm run test:ui
+          npm run test:drawing

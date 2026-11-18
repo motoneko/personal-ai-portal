@@ -2,20 +2,42 @@
   "name": "personal-ai-portal",
   "private": true,
   "scripts": {
-    "build": "esbuild web/app.jsx --bundle --minify --outfile=web/dist/app.js --public-path=/portal-assets --loader:.woff2=file --loader:.woff=file --loader:.ttf=file --loader:.svg=file --loader:.png=file && cp node_modules/naive-icons/svg/leaf.svg web/dist/favicon.svg",
-    "test:ui": "node tests/browser.mjs"
+    "build": "node -e \"require('node:fs').rmSync('web/dist',{recursive:true,force:true})\" && esbuild web/app.jsx --bundle --minify --outfile=web/dist/app.js --public-path=/portal-assets --loader:.woff2=file --loader:.woff=file --loader:.ttf=file --loader:.svg=file --loader:.png=file && cp node_modules/naive-icons/svg/leaf.svg web/dist/favicon.svg && esbuild web/drawing.jsx --bundle --minify --format=esm --splitting --outdir=web/dist --public-path=/portal-assets --loader:.woff2=file --loader:.woff=file --loader:.ttf=file --loader:.svg=file --loader:.png=file",
+    "test:ui": "node tests/browser.mjs",
+    "test:drawing": "node tests/drawing.mjs"
   },
   "dependencies": {
+    "@drawnix/drawnix": "0.4.0-0",
+    "@plait-board/react-board": "0.4.0-0",
+    "@plait-board/react-text": "0.4.0-0",
+    "@plait/common": "0.89.2",
+    "@plait/core": "0.89.2",
+    "@plait/draw": "0.89.2",
+    "@plait/mind": "0.89.2",
+    "@plait/text-plugins": "0.89.2",
     "animal-island-ui": "^4.0.1",
+    "classnames": "2.5.1",
     "diff": "^8.0.2",
+    "laser-pen": "1.0.1",
     "naive-icons": "^1.16.1",
     "qrcode": "^1.5.4",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "roughjs": "4.6.6",
+    "slate": "0.116.0",
+    "slate-dom": "0.116.0",
+    "slate-history": "0.115.0",
+    "slate-react": "0.116.0"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
     "playwright": "^1.58.0",
     "prettier": "^3.10.1"
+  },
+  "overrides": {
+    "dompurify": "^3.3.3",
+    "katex": "^0.18.2",
+    "mermaid": "10.9.8",
+    "uuid": "^11.1.0"
   }
 }

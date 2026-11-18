@@ -195,3 +195,32 @@ func TestGeneratedImagesArePrivateAndPersistent(t *testing.T) {
 		t.Fatal("image not persisted", got.Code)
 	}
 }
+
+func TestDrawingRequiresSessionAndPersists(t *testing.T) {
+	a := testApp(t)
+	if w := request(a, "GET", "/draw/editor", "", nil, ""); w.Code != 303 {
+		t.Fatal("editor must require login", w.Code)
+	}
+	c := loginCookie(t, a)
+	w := request(a, "GET", "/draw/editor", "", c, "")
+	if w.Code != 200 || w.Header().Get("X-Frame-Options") != "SAMEORIGIN" {
+		t.Fatal("same-origin editor failed", w.Code)
+	}
+	if !strings.Contains(w.Header().Get("Content-Security-Policy"), "frame-ancestors 'self'") {
+		t.Fatal("editor cannot be embedded by portal")
+	}
+	body := `{"id":"drawing-main","kind":"drawing","title":"白板","body":"{\"children\":[]}"}`
+	if w := request(a, "POST", "/portal-api/records", body, c, a.origin); w.Code != 200 {
+		t.Fatal(w.Code, w.Body.String())
+	}
+	if w := request(a, "GET", "/portal-api/records?kind=drawing", "", nil, ""); w.Code != 401 {
+		t.Fatal("drawing exposed")
+	}
+	w = request(a, "GET", "/portal-api/records?kind=drawing", "", c, "")
+	if w.Code != 200 || !strings.Contains(w.Body.String(), "drawing-main") {
+		t.Fatal("drawing not persisted")
+	}
+	if w := request(a, "GET", "/", "", nil, ""); w.Header().Get("X-Frame-Options") != "DENY" {
+		t.Fatal("portal framing protection changed")
+	}
+}

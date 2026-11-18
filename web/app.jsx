@@ -51,6 +51,15 @@ import { diffLines } from "diff";
 
 const modules = [
   {
+    id: "draw",
+    title: "Drawnix 白板",
+    short: "创作白板",
+    desc: "思维导图、流程图和自由绘画，放开手去画。",
+    hint: "无限画布 · 导入导出",
+    color: "app-yellow",
+    Icon: CompassIcon,
+  },
+  {
     id: "chat",
     title: "AI 聊天工作台",
     short: "聊天树屋",
@@ -258,7 +267,7 @@ function App() {
   );
   return (
     <Background type="default" className="island-background">
-      <div className="island-shell">
+      <div className={"island-shell page-" + pageID}>
         <header className="island-header">
           <a href="/" className="brand">
             <span className="brand-leaf">
@@ -331,6 +340,12 @@ function App() {
             <Login />
           ) : pageID === "home" ? (
             <Home session={session} />
+          ) : pageID === "draw" ? (
+            <iframe
+              className="drawing-frame"
+              title="Drawnix 白板编辑器"
+              src="/draw/editor"
+            />
           ) : pageID === "tools" ? (
             <Tools />
           ) : pageID === "chat" ? (
@@ -374,222 +389,121 @@ function App() {
     </Background>
   );
 }
-function Island() {
-  return (
-    <div className="island-scene" aria-hidden="true">
-      <div className="scene-sun">
-        <SunIcon size={66} />
-      </div>
-      <div className="scene-cloud cloud-one">
-        <CloudIcon size={80} />
-      </div>
-      <div className="scene-cloud cloud-two">
-        <CloudIcon size={55} />
-      </div>
-      <div className="island-sea"></div>
-      <div className="island-land"></div>
-      <div className="scene-tree">
-        <TreeIcon size={130} />
-      </div>
-      <div className="scene-home">
-        <HomeIcon size={116} />
-      </div>
-      <div className="scene-flower">
-        <FlowerIcon size={42} />
-      </div>
-      <div className="scene-flower second">
-        <FlowerIcon size={31} />
-      </div>
-      <div className="scene-boat">
-        <SailboatIcon size={58} />
-      </div>
-      <div className="scene-label">
-        <Tag color="app-teal" variant="solid">
-          <LeafIcon size={16} /> YOUR HAPPY PLACE
-        </Tag>
-      </div>
-    </div>
-  );
-}
 function Home({ session }) {
-  const [health, setHealth] = useState(null),
-    [quota, setQuota] = useState(null);
+  const [recent, setRecent] = useState([]);
   useEffect(() => {
-    if (session.authenticated) {
-      api("status")
-        .then(setHealth)
-        .catch(() => {});
-      api("quota")
-        .then(setQuota)
-        .catch(() => {});
-    }
+    if (!session.authenticated) return;
+    Promise.all(
+      ["chat", "read", "lab", "drawing"].map((kind) =>
+        api("records?kind=" + kind + "&summary=1"),
+      ),
+    )
+      .then((groups) =>
+        setRecent(
+          groups
+            .flat()
+            .sort((a, b) => b.updated - a.updated)
+            .slice(0, 4),
+        ),
+      )
+      .catch(() => {});
   }, [session.authenticated]);
+  const primary = ["chat", "draw", "read", "lab"];
   return (
-    <>
-      <section className="welcome">
-        <div className="welcome-copy">
+    <div className="home-content">
+      <section className="home-start">
+        <div>
           <Title color="app-yellow" size="small" variant="ribbon">
-            欢迎回到你的小岛
+            你的小岛，你的节奏
           </Title>
-          <h1>
-            今天，也来岛上
-            <br />
-            做点<span>有趣的事。</span>
-          </h1>
-          <p>
-            和 AI 聊天，收藏知识，种下灵感。
-            <br />
-            这里是你的私人小天地，慢慢来就好。
-          </p>
-          <div className="hero-buttons">
-            <Button
-              type="primary"
-              size="large"
-              icon={<CompassIcon size={24} />}
-              onClick={() =>
-                document
-                  .getElementById("explore")
-                  .scrollIntoView({ behavior: "smooth" })
-              }
-            >
-              开始探索
-            </Button>
-            <Button
-              type="text"
-              icon={<CoffeeIcon size={23} />}
-              onClick={() => go("/chat/")}
-            >
-              找 AI 聊一会儿
-            </Button>
-          </div>
+          <h1>今天，想做点什么？</h1>
+          <p>聊一个问题，画一张图，留住一个新想法。</p>
         </div>
-        <Island />
+        <Button
+          type="primary"
+          size="large"
+          icon={<PlusIcon size={24} />}
+          onClick={() => go("/chat/")}
+        >
+          开始新对话
+        </Button>
       </section>
-      <section className="island-strip">
-        <div className="strip-greeting">
-          <FlowerIcon size={36} />
-          <div>
-            <strong>岛上今日简报</strong>
-            <small>一切准备就绪，等你来探索</small>
-          </div>
-        </div>
-        <div>
-          <span className="strip-label">小岛设施</span>
-          <strong>
-            6 <small>处好去处</small>
-          </strong>
-        </div>
-        <div>
-          <span className="strip-label">服务状态</span>
-          <strong id="home-health">
-            {!session.authenticated
-              ? "登录后查看"
-              : !health
-                ? "检查中"
-                : health.services.every((s) => s.ok)
-                  ? "运行正常"
-                  : "需要关注"}
-          </strong>
-        </div>
-        <div>
-          <span className="strip-label">能量账户</span>
-          <strong id="home-quota">
-            {!session.authenticated
-              ? "私人保管"
-              : quota
-                ? quota.accounts.length + " 个账号"
-                : "读取中"}
-          </strong>
-        </div>
-        <div className="strip-date">
-          <SunIcon size={25} />
-          <span>
-            {new Date().toLocaleDateString("zh-CN", {
-              month: "long",
-              day: "numeric",
-              weekday: "short",
-            })}
-          </span>
-        </div>
-      </section>
-      <section id="explore">
+      <section aria-label="常用功能">
         <div className="section-heading">
-          <div>
-            <span className="eyebrow">EXPLORE YOUR ISLAND</span>
-            <h2>
-              今天，想去哪里？ <LeafIcon size={26} />
-            </h2>
-          </div>
-          <span>六个小角落，装下你的好奇心</span>
+          <h2>常用功能</h2>
         </div>
         <div className="cards">
-          {modules.map((m, i) => (
-            <a className="destination" key={m.id} href={"/" + m.id + "/"}>
-              <Card pattern={m.color} hoverable className="destination-card">
-                <div className="destination-top">
-                  <span className="destination-icon">
-                    <m.Icon size={56} />
-                  </span>
-                  <Tag color={m.color} size="small">
-                    0{i + 1} · {m.short}
-                  </Tag>
-                </div>
-                <h3>{m.title}</h3>
-                <p>{m.desc}</p>
-                <div className="destination-bottom">
-                  <span>{m.hint}</span>
-                  <ArrowRightIcon size={25} />
-                </div>
-              </Card>
-            </a>
-          ))}
+          {primary
+            .map((id) => modules.find((m) => m.id === id))
+            .map((m) => (
+              <a className="destination" key={m.id} href={"/" + m.id + "/"}>
+                <Card pattern={m.color} hoverable className="destination-card">
+                  <div className="destination-top">
+                    <m.Icon size={40} />
+                    <ArrowRightIcon size={22} />
+                  </div>
+                  <h3>{m.title}</h3>
+                  <p>{m.desc}</p>
+                  <span className="muted">{m.hint}</span>
+                </Card>
+              </a>
+            ))}
         </div>
       </section>
-      <section className="home-bottom">
-        <Card type="dashed" className="notice-board">
-          <Title color="app-green" size="small" variant="tab">
-            小岛便签
-          </Title>
-          <h3>灵感有时，只差一个开始。</h3>
-          <p>
-            今天读到的好文章，交给图书馆整理。
-            <br />
-            突然冒出的奇妙念头，去花园里种下它。
-          </p>
-          <Button
-            type="text"
-            icon={<SparklesIcon size={23} />}
-            onClick={() => go("/lab/")}
-          >
-            去灵感花园逛逛
-          </Button>
-          <div className="board-flower">
-            <FlowerIcon size={76} />
+      <section className="home-recent">
+        <div className="section-heading">
+          <h2>最近的内容</h2>
+          <span className="muted">继续上次的想法</span>
+        </div>
+        {recent.length ? (
+          <div className="recent-grid">
+            {recent.map((r) => (
+              <a
+                key={r.id}
+                href={
+                  "/" +
+                  (r.kind === "drawing" ? "draw" : r.kind) +
+                  "/?record=" +
+                  encodeURIComponent(r.id)
+                }
+              >
+                <Card hoverable>
+                  <strong>{r.title}</strong>
+                  <span>
+                    {
+                      modules.find(
+                        (m) =>
+                          m.id === (r.kind === "drawing" ? "draw" : r.kind),
+                      )?.title
+                    }{" "}
+                    · {new Date(r.updated * 1000).toLocaleDateString("zh-CN")}
+                  </span>
+                </Card>
+              </a>
+            ))}
           </div>
-        </Card>
-        <Card pattern="app-yellow" className="quick-dock">
-          <Title color="app-orange" size="small" variant="ribbon">
-            岛务小站
-          </Title>
-          <div className="quick-row">
-            <a href="/admin/dashboard">
-              <SettingsIcon size={28} />
-              <span>
-                Sub2API 管理后台<small>账号、模型与分组管理</small>
-              </span>
-              <ArrowRightIcon size={20} />
-            </a>
-            <a href="/dashboard">
-              <HomeIcon size={28} />
-              <span>
-                Sub2API 用户中心<small>用量与 API 密钥</small>
-              </span>
-              <ArrowRightIcon size={20} />
-            </a>
-          </div>
-        </Card>
+        ) : (
+          <Card type="dashed">
+            <p className="recent-empty">
+              {session.authenticated
+                ? "从一段对话或一张白板开始，保存的内容会出现在这里。"
+                : "登录后，在这里继续你的对话、阅读和创作。"}
+            </p>
+          </Card>
+        )}
       </section>
-    </>
+      <nav className="home-utilities" aria-label="其他入口">
+        {modules
+          .filter((m) => !primary.includes(m.id))
+          .map((m) => (
+            <a key={m.id} href={"/" + m.id + "/"}>
+              <m.Icon size={22} />
+              {m.title}
+              <ArrowRightIcon size={17} />
+            </a>
+          ))}
+      </nav>
+    </div>
   );
 }
 function Login() {
@@ -735,6 +649,15 @@ function Chat({ session }) {
     [model, setModel] = useState(session.model),
     [busy, setBusy] = useState(false),
     [deleting, setDeleting] = useState(null);
+  const openedRecord = useRef(false);
+  useEffect(() => {
+    const id = new URLSearchParams(location.search).get("record");
+    const r = items.find((r) => r.id === id);
+    if (r && !openedRecord.current) {
+      openedRecord.current = true;
+      setChat({ ...JSON.parse(r.body), id: r.id });
+    }
+  }, [items]);
   const messagesRef = useRef();
   useEffect(() => {
     messagesRef.current?.scrollTo(0, messagesRef.current.scrollHeight);
@@ -1188,6 +1111,20 @@ function Studio({ kind, session }) {
           ["image", "AI 图片"],
         ]
   ).map(([key, label]) => ({ key, label }));
+  const openedRecord = useRef(false);
+  useEffect(() => {
+    const id = new URLSearchParams(location.search).get("record");
+    const r = items.find((r) => r.id === id);
+    if (r && !openedRecord.current) {
+      openedRecord.current = true;
+      const data = JSON.parse(r.body);
+      setCurrent(r);
+      setSource(data.source || "");
+      setResult(data.text || "");
+      setImages(data.images || []);
+      setMode(data.mode || (read ? "summary" : "story"));
+    }
+  }, [items]);
   function fresh() {
     setCurrent(null);
     setSource("");
