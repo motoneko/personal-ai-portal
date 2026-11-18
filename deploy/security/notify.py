@@ -5,6 +5,9 @@ import email.message
 import email.utils
 import fcntl
 import ipaddress
+import json
+import subprocess
+from urllib.parse import urlsplit
 import os
 from pathlib import Path
 import smtplib
@@ -54,7 +57,20 @@ def smtp_send(message, config):
             raise RuntimeError('recipient rejected')
 
 
-def deliver(db, config, now, sender=smtp_send):
+def recovery_link(ip, config):
+    if config.get('EMAIL_RECOVERY_ENABLED') != 'true':
+        return None
+    site = config.get('ALERT_SITE', '').rstrip('/')
+    parsed = urlsplit(site)
+    if parsed.scheme != 'https' or not parsed.netloc or parsed.query or parsed.fragment:
+        raise ValueError('Recovery requires a configured HTTPS site')
+    result = subprocess.run(['/usr/bin/docker', 'exec', 'personal-ai-portal', '/usr/local/bin/portal',
+        'security-recovery-token', str(ipaddress.ip_address(ip))], capture_output=True, text=True, timeout=12, check=True)
+    token = json.loads(result.stdout).get('token')
+    return site + '/portal-login/recover/#' + token if token else None
+
+
+def deliver(db, config, now, sender=smtp_send, link_factory=recovery_link):
     last = db.execute("SELECT value FROM state WHERE key='last_sent'").fetchone()
     if last and now - last[0] < 1800:
         return 'cooldown'
@@ -65,7 +81,7 @@ def deliver(db, config, now, sender=smtp_send):
     if any(not config.get(k) for k in required):
         return 'unconfigured: queued events retained; set private SMTP configuration'
     message = email.message.EmailMessage()
-    message['Subject'] = '[Private Island] 登录安全告警 / Login security alert'
+    message['Subject'] = ('[测试] Private Island 邮件与解封验证' if all(row[1] == 'test' for row in rows) else '[Private Island] 登录安全告警 / Login security alert')
     message['From'] = config['SMTP_FROM']
     message['To'] = config['ALERT_TO']
     message['Date'] = email.utils.formatdate(now, usegmt=True)
@@ -79,6 +95,22 @@ def deliver(db, config, now, sender=smtp_send):
         lines.append(f'{time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(created))}  {kind}  {ip}')
     if len(rows) > 50:
         lines.append('仅展示最近 50 条；其余事件已计入汇总。')
+    if config.get('EMAIL_RECOVERY_ENABLED') == 'true':
+        links = []
+        seen = set()
+        for _, kind, ip, _ in reversed(rows):
+            if kind not in ('login-ban', 'test') or ip in seen:
+                continue
+            seen.add(ip)
+            link = link_factory(ip, config)
+            if link:
+                links.extend([f'解封 {ip}：', link])
+            if len(seen) >= 10:
+                break
+        if links:
+            lines.extend(['', '如需恢复自己的 IP，请打开下面链接并点击“确认解封此 IP”。',
+                '链接最长有效 30 分钟、仅限此次封禁、只能执行一次；不需要网站密码。',
+                '请勿转发此邮件。打开或预览链接本身不会解封。', *links])
     lines.extend(['', '同类事件合并发送，所有告警合计最多每 30 分钟一封。',
         '封禁仅限制新的私人空间登录；已有会话、Sub2API API 和其他服务不受影响。',
         '如非本人操作，可检查服务器 Fail2Ban 状态。邮件不包含密码或 API 密钥。'])

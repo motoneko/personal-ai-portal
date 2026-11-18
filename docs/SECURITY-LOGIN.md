@@ -55,3 +55,19 @@ sudo systemctl start portal-security-mail.service
 Go 测试覆盖 IP 伪造、日志敏感信息边界、全局告警限量、封禁与过期、已有会话不受影响。Python 测试覆盖无配置保留队列、发送失败重试、全局去重冷却及 IP 日志注入拒绝。上线还应验证 Fail2Ban 日志匹配、实际封禁与解封，以及 SMTP 测试信。
 
 相较于 [CrowdSec](https://docs.crowdsec.net/docs/local_api/notification_plugins/email/)，本部署选择 Fail2Ban 的独立日志检测；不引入 CrowdSec 的额外检测/决策组件。邮件发送器是本项目实现，并非 Fail2Ban 的原生 sendmail action，以提供统一队列和跨 IP 合并限频。
+
+## 邮件解封
+
+配置 `EMAIL_RECOVERY_ENABLED=true` 后，封禁告警会为最近最多 10 个仍处于封禁中的 IP 生成解封链接。链接指向 `/portal-login/recover/#TOKEN`，无需网站登录；打开页面后必须点击确认，GET 请求和邮件预览不会解封。只需要 SMTP 发信，不需要 IMAP 或读取邮箱。
+
+令牌使用 256 位随机数，数据库只存 SHA-256 摘要；有效期为 30 分钟与原封禁剩余时间中的较短者。令牌绑定该 IP 的当次封禁到期值，旧链接不能解除后来的新封禁。确认会创建单次后台任务；重复确认不会再次执行解封。URL fragment 不会发送到服务器访问日志，确认和查询通过同源 POST 传递令牌。邮件属于解封凭据，不应转发。
+
+主机 `portal-security-recovery.timer` 每 15 秒检查一次已确认申请。对应服务经受限的 CLI 获取任务，执行固定的 Fail2Ban 解封命令，再核对并清理对应的一次应用封禁；网页容器不挂载 Docker/Fail2Ban socket。命令失败或任务中断不会自动重复执行解封，页面会提示失败，可使用 SSH 或等待自动到期。
+
+QQ 邮箱使用 `smtp.qq.com:465`、SSL/TLS、完整邮箱地址和专用授权码，发件人与收件人可按实际所有者配置。授权码生成参见 [QQ 官方说明](https://help.mail.qq.com/detail/106/985)。在服务器终端隐藏输入授权码：
+
+```sh
+sudo python3 /opt/personal-ai-portal-security/configure-mail.py
+```
+
+`configure-mail.py` 只原子更新 root-only 的 `SMTP_PASSWORD`，不在终端显示授权码，也不将其放入命令行参数或 shell 历史。配置后仍应发送测试邮件确认送达。服务日志只记录发送状态和错误类型，不记录凭据或解封令牌。

@@ -335,8 +335,10 @@ function App() {
           </nav>
         )}
         <main>
-          {pageID === "portal-login" ||
-          (protectedPage && !session.authenticated) ? (
+          {location.pathname === "/portal-login/recover/" ? (
+            <Recovery />
+          ) : pageID === "portal-login" ||
+            (protectedPage && !session.authenticated) ? (
             <Login />
           ) : pageID === "home" ? (
             <Home session={session} />
@@ -503,6 +505,102 @@ function Home({ session }) {
             </a>
           ))}
       </nav>
+    </div>
+  );
+}
+function Recovery() {
+  const token = useRef(location.hash.slice(1));
+  const [data, setData] = useState(null),
+    [error, setError] = useState(""),
+    [busy, setBusy] = useState(false);
+  async function inspect() {
+    try {
+      setData(
+        await api("recovery/inspect", {
+          method: "POST",
+          body: { token: token.current },
+        }),
+      );
+    } catch (e) {
+      setError(e.message);
+    }
+  }
+  useEffect(() => {
+    inspect();
+  }, []);
+  useEffect(() => {
+    if (!data || !["pending", "processing"].includes(data.status) || error)
+      return;
+    const id = setInterval(inspect, 3000);
+    return () => clearInterval(id);
+  }, [data?.status, error]);
+  async function confirm() {
+    setBusy(true);
+    try {
+      setData(
+        await api("recovery/redeem", {
+          method: "POST",
+          body: { token: token.current },
+        }),
+      );
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="login-wrap">
+      <Card className="login-card">
+        <Title color="app-yellow" size="small">
+          邮件解封确认
+        </Title>
+        <h1>恢复登录访问</h1>
+        {error ? (
+          <p role="alert">{error}</p>
+        ) : !data ? (
+          <p role="status">正在验证邮件链接…</p>
+        ) : (
+          <>
+            <p>
+              来源 IP：<strong>{data.ip}</strong>
+            </p>
+            {data.status === "ready" ? (
+              <>
+                <p>
+                  仅解除这个 IP
+                  当前的一次登录封禁，不修改密码或关闭防护。请确认这是你要恢复的来源。
+                </p>
+                <Button
+                  id="confirm-recovery"
+                  type="primary"
+                  loading={busy}
+                  onClick={confirm}
+                >
+                  确认解封此 IP
+                </Button>
+              </>
+            ) : ["pending", "processing"].includes(data.status) ? (
+              <p role="status">
+                解封申请已提交，通常在一分钟内完成，请保持此页面打开。
+              </p>
+            ) : data.status === "done" ? (
+              <>
+                <p role="status">
+                  已解除封禁，可以重新登录。后续异常尝试仍会触发防护。
+                </p>
+                <Button type="primary" onClick={() => go("/portal-login/")}>
+                  前往登录
+                </Button>
+              </>
+            ) : (
+              <p role="alert">
+                此申请已失效或未能完成。可通过 SSH 解封，或等待封禁自动到期。
+              </p>
+            )}
+          </>
+        )}
+      </Card>
     </div>
   );
 }

@@ -1,0 +1,17 @@
+[Unit]
+Description=Apply owner-confirmed email IP recovery requests
+After=docker.service fail2ban.service
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/personal-ai-portal-security/recover.py
+StateDirectory=personal-ai-portal-alerts
+StateDirectoryMode=0700
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/personal-ai-portal-alerts
+MemoryMax=96M
+CPUQuota=25%
+TimeoutStartSec=50

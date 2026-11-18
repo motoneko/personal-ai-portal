@@ -32,3 +32,18 @@ class Notifications(unittest.TestCase):
             db.close()
 
 if __name__ == '__main__': unittest.main()
+
+class RecoveryLinks(unittest.TestCase):
+    def test_only_bans_get_bound_recovery_links(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            db=n.database(str(Path(tmp)/'queue.db'))
+            n.enqueue(db,'login-ban','203.0.113.8',10000)
+            n.enqueue(db,'global-rate-limit','203.0.113.9',10000)
+            cfg=dict(SMTP_HOST='smtp.example.com',SMTP_USERNAME='owner',SMTP_PASSWORD='secret',SMTP_FROM='from@example.com',ALERT_TO='to@example.com',EMAIL_RECOVERY_ENABLED='true')
+            links=[];messages=[]
+            def link(ip,config):links.append(ip);return 'https://portal.example.com/portal-login/recover/#example-token'
+            n.deliver(db,cfg,10000,lambda message,config:messages.append(message),link)
+            self.assertEqual(links,['203.0.113.8'])
+            self.assertIn('/recover/#example-token',messages[0].get_content())
+            self.assertIn('确认解封',messages[0].get_content())
+            db.close()

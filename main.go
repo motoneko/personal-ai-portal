@@ -76,11 +76,11 @@ func openDB(path string) (*sql.DB, error) {
 		return nil, e
 	}
 	db.SetMaxOpenConns(1)
-	_, e = db.Exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS login_bans (ip TEXT PRIMARY KEY, expires INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, expires INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS records (id TEXT PRIMARY KEY, kind TEXT NOT NULL, title TEXT NOT NULL, body TEXT NOT NULL, updated INTEGER NOT NULL);`)
+	_, e = db.Exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS login_recovery (id TEXT PRIMARY KEY, ip TEXT NOT NULL, ban_expiry INTEGER NOT NULL, expires INTEGER NOT NULL, status TEXT NOT NULL, created INTEGER NOT NULL, updated INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS login_bans (ip TEXT PRIMARY KEY, expires INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, expires INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS records (id TEXT PRIMARY KEY, kind TEXT NOT NULL, title TEXT NOT NULL, body TEXT NOT NULL, updated INTEGER NOT NULL);`)
 	return db, e
 }
 func main() {
-	if securityCommand() {
+	if recoveryCommand() || securityCommand() {
 		return
 	}
 	if len(os.Args) > 1 && os.Args[1] == "healthcheck" {
@@ -169,6 +169,10 @@ func (a *app) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		jsonOut(w, 200, map[string]any{"authenticated": a.authenticated(r), "model": a.model, "imageModel": a.imageModel, "aiConfigured": a.key != ""})
 		return
 	}
+	if p == "/portal-api/recovery/inspect" || p == "/portal-api/recovery/redeem" {
+		a.recovery(w, r)
+		return
+	}
 	if !a.authenticated(r) {
 		fail(w, 401, "请先登录个人空间")
 		return
@@ -221,7 +225,7 @@ func (a *app) static(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Frame-Options", "SAMEORIGIN")
 		w.Header().Set("Content-Security-Policy", strings.ReplaceAll(w.Header().Get("Content-Security-Policy"), "frame-ancestors 'none'", "frame-ancestors 'self'"))
 		file = "web/drawing.html"
-	case "/", "/draw/", "/chat/", "/tools/", "/read/", "/lab/", "/status/", "/quota/", "/portal-login/":
+	case "/portal-login/recover/", "/", "/draw/", "/chat/", "/tools/", "/read/", "/lab/", "/status/", "/quota/", "/portal-login/":
 		file = "web/index.html"
 	case "/portal-assets/style.css":
 		file = "web/style.css"
