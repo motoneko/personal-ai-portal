@@ -3,6 +3,7 @@
 from pathlib import Path
 import datetime
 import ipaddress
+import json
 import shutil
 import subprocess
 import urllib.request
@@ -11,11 +12,14 @@ path = Path('/etc/haproxy/haproxy.cfg')
 source = path.read_text()
 if '# portal client IP verification' in source:
     raise SystemExit('Portal client IP verification already configured.')
+request = urllib.request.Request('https://api.cloudflare.com/client/v4/ips', headers={'User-Agent': 'personal-ai-portal-security/1.0'})
+with urllib.request.urlopen(request, timeout=20) as response:
+    payload = json.load(response)
+if payload.get('success') is not True:
+    raise SystemExit('Cloudflare IP API failed; no changes made.')
 ranges = []
 for version in (4, 6):
-    with urllib.request.urlopen(f'https://www.cloudflare.com/ips-v{version}', timeout=20) as response:
-        lines = response.read().decode().splitlines()
-    nets = [ipaddress.ip_network(line.strip()) for line in lines if line.strip()]
+    nets = [ipaddress.ip_network(line) for line in payload['result'][f'ipv{version}_cidrs']]
     if not nets or any(net.version != version or net.prefixlen == 0 for net in nets):
         raise SystemExit('Invalid Cloudflare ranges; no changes made.')
     ranges.extend(str(net) for net in nets)

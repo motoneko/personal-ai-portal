@@ -17,7 +17,7 @@
 
 Portal backend 总是覆盖 `X-Portal-Client-IP`。仅当直接来源属于 Cloudflare 官方网段时，才使用 `CF-Connecting-IP`；其余连接使用真实来源地址。Portal 仅信任 `PORTAL_TRUSTED_PROXIES` 中指定的直接代理 CIDR，不信任访问者提交的 X-Forwarded-For。
 
-部署脚本从 [Cloudflare IPv4](https://www.cloudflare.com/ips-v4) / [IPv6](https://www.cloudflare.com/ips-v6) 获取并验证网段，首次更新时备份 HAProxy 配置、校验语法并重载。网段文件 `/etc/haproxy/portal-cloudflare.lst` 需要在 Cloudflare 公布变更时更新并校验重载。不要将任意来源或整个 Docker 网络设为可信代理。
+部署脚本从 [Cloudflare 官方 IP API](https://developers.cloudflare.com/api/resources/ips/methods/list/) 获取并验证 IPv4/IPv6 网段，首次更新时备份 HAProxy 配置、校验语法并重载。网段文件 `/etc/haproxy/portal-cloudflare.lst` 需要在 Cloudflare 公布变更时更新并校验重载。不要将任意来源或整个 Docker 网络设为可信代理。
 
 ## 安装与维护
 
