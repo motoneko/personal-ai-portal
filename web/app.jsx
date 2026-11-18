@@ -634,7 +634,7 @@ function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
-            minLength={20}
+            minLength={10}
             required
             size="large"
             prefix={<LockIcon size={22} />}

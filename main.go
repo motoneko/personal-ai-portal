@@ -91,8 +91,8 @@ func main() {
 	}
 
 	password := os.Getenv("PORTAL_PASSWORD")
-	if len(password) < 20 {
-		log.Fatal("PORTAL_PASSWORD must contain at least 20 characters")
+	if len(password) < 10 {
+		log.Fatal("PORTAL_PASSWORD must contain at least 10 characters")
 	}
 	db, e := openDB(env("PORTAL_DB", "portal.db"))
 	if e != nil {

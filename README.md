@@ -42,7 +42,7 @@ docker compose up -d --build
 | 环境变量 | 含义 |
 | --- | --- |
 | `PORTAL_ORIGIN` | 完整 HTTPS 来源，例如 `https://portal.example.com`，不要加尾部 `/` |
-| `PORTAL_PASSWORD` | 至少 20 字符的强随机空间密码；只存在于服务端 |
+| `PORTAL_PASSWORD` | 至少 10 字符的强随机空间密码；只存在于服务端 |
 | `PORTAL_API_KEY` | 上游模型密钥；不会下发到前端 |
 | `PORTAL_MODEL` | 默认文本模型，默认 `gpt-6.1-sol` |
 | `PORTAL_IMAGE_MODEL` | 图片生成模型，默认 `gpt-image-1`，需上游支持 |
