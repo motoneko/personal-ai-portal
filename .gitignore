@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+node_modules/
+web/dist/
+data/
+portal
+*.db*
+*.log
+test-results/
+
+__pycache__/

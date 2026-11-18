@@ -1,0 +1,31 @@
+services:
+  portal:
+    build: .
+    image: personal-ai-portal:local
+    container_name: personal-ai-portal
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:8090:8090"
+    volumes:
+      - portal-data:/data
+      - /proc:/host/proc:ro
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,noexec,nosuid
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 160m
+    cpus: 0.75
+    networks: [upstream]
+    healthcheck:
+      test: [CMD, /usr/local/bin/portal, healthcheck]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+volumes:
+  portal-data:
+networks:
+  upstream:
+    external: true
+    name: ${PORTAL_NETWORK:-sub2api-deploy_sub2api-network}
